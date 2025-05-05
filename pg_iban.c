@@ -7,6 +7,10 @@
 
 PG_MODULE_MAGIC;
 
+Datum iban_in(PG_FUNCTION_ARGS);
+Datum iban_out(PG_FUNCTION_ARGS);
+Datum iban_eq(PG_FUNCTION_ARGS);
+
 PG_FUNCTION_INFO_V1(iban_in);
 PG_FUNCTION_INFO_V1(iban_out);
 PG_FUNCTION_INFO_V1(iban_eq);
