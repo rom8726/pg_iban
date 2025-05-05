@@ -1,0 +1,4 @@
+comment = 'IBAN data type and validation functions'
+default_version = '1.0'
+relocatable = true
+module_pathname = '$libdir/pg_iban'
