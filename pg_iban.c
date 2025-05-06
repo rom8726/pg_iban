@@ -9,10 +9,9 @@
 #include <string.h>
 #include <stdlib.h>
 
-PG_MODULE_MAGIC;
+#include "pg_iban_validate.h"
 
-#define MAX_IBAN_LENGTH 34
-#define MIN_IBAN_LENGTH 15
+PG_MODULE_MAGIC;
 
 Datum pg_iban_in(PG_FUNCTION_ARGS);
 Datum pg_iban_out(PG_FUNCTION_ARGS);
@@ -35,8 +34,6 @@ PG_FUNCTION_INFO_V1(pg_iban_cmp);
 PG_FUNCTION_INFO_V1(pg_iban_hash);
 
 extern Datum bttextcmp(PG_FUNCTION_ARGS);
-
-static bool validate_pg_iban(const char *iban);
 
 Datum pg_iban_in(PG_FUNCTION_ARGS)
 {
@@ -69,41 +66,6 @@ Datum pg_iban_out(PG_FUNCTION_ARGS)
     text *iban_text = PG_GETARG_TEXT_P(0);
     char *result = text_to_cstring(iban_text);
     PG_RETURN_CSTRING(result);
-}
-
-static bool validate_pg_iban(const char *iban)
-{
-    int len = strlen(iban);
-    if (len < MIN_IBAN_LENGTH || len > MAX_IBAN_LENGTH)
-        return false;
-
-    char rearranged[MAX_IBAN_LENGTH * 2 + 1];
-    snprintf(rearranged, sizeof(rearranged), "%s%s", iban + 4, iban);
-
-    char digits[MAX_IBAN_LENGTH * 4 + 1];
-    int pos = 0;
-    for (int i = 0; rearranged[i] != '\0'; i++) {
-        if (isdigit((unsigned char)rearranged[i])) {
-            digits[pos++] = rearranged[i];
-        } else if (isupper((unsigned char)rearranged[i])) {
-            int val = rearranged[i] - 'A' + 10;
-            pos += snprintf(digits + pos, sizeof(digits) - pos, "%d", val);
-        } else {
-            return false;
-        }
-    }
-    digits[pos] = '\0';
-
-    char *p = digits;
-    long long rem = 0;
-    while (*p) {
-        char chunk[10] = {0};
-        snprintf(chunk, sizeof(chunk), "%lld%.9s", rem, p);
-        rem = strtoll(chunk, NULL, 10) % 97;
-        p += 9;
-    }
-
-    return rem == 1;
 }
 
 Datum pg_iban_eq(PG_FUNCTION_ARGS)
