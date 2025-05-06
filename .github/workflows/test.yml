@@ -24,29 +24,8 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-buildx-
 
-      - name: Build unit test image
-        id: unit-tests-build
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          tags: pg_iban_unit_tests:latest
-          load: true
-          cache-from: type=local,src=/tmp/.buildx-cache
-          cache-to: type=local,dest=/tmp/.buildx-cache,mode=max
-
       - name: Run unit tests
         run: make docker-unit-test
-
-      - name: Build integration test image
-        id: integration-tests-build
-        uses: docker/build-push-action@v5
-        with:
-          context: .
-          file: Dockerfile.integration
-          tags: pg_iban_integration_tests:latest
-          load: true
-          cache-from: type=local,src=/tmp/.buildx-cache
-          cache-to: type=local,dest=/tmp/.buildx-cache,mode=max
 
       - name: Run integration tests
         run: make docker-integration-test
