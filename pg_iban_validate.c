@@ -5,33 +5,27 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-static bool validate_iban_checksum(const char *iban_clean)
+bool validate_iban_checksum(const char *iban_clean)
 {
     const int len = (int)strlen(iban_clean);
-    char temp[256];
-    memcpy(temp, iban_clean + 4, len - 4);
-    memcpy(temp + len - 4, iban_clean, 4);
-    temp[len] = '\0';
 
-    char numeric[512];
-    size_t pos = 0;
-    for (int i = 0; i < len; ++i) {
-        char c = temp[i];
-        if (isdigit((unsigned char)c)) {
-            numeric[pos++] = c;
-        } else if (isalpha((unsigned char)c)) {
-            int val = toupper(c) - 'A' + 10;
-            numeric[pos++] = '0' + (val / 10);
-            numeric[pos++] = '0' + (val % 10);
+    if (len < 4 || len < MIN_IBAN_LENGTH || len > MAX_IBAN_LENGTH)
+        return false;
+
+    unsigned int mod = 0;
+
+    for (int i = 4; i < len + 4; ++i) {
+        unsigned char ch = (unsigned char)iban_clean[(i < len) ? i : (i - len)];
+
+        if (isdigit(ch)) {
+            mod = (mod * 10 + (ch - '0')) % 97;
+        } else if (isalpha(ch)) {
+            int val = toupper(ch) - 'A' + 10;
+            mod = (mod * 10 + (val / 10)) % 97;
+            mod = (mod * 10 + (val % 10)) % 97;
         } else {
             return false;
         }
-    }
-    numeric[pos] = '\0';
-
-    unsigned int mod = 0;
-    for (size_t i = 0; i < pos; ++i) {
-        mod = (mod * 10 + (numeric[i] - '0')) % 97;
     }
 
     return mod == 1;
