@@ -1,10 +1,10 @@
 FROM postgres:16.0
 
-RUN apt-get update && apt-get install -y \
+RUN apt-get update -qq > /dev/null && apt-get install -y -qq \
     locales \
     build-essential \
     postgresql-server-dev-16 \
-    git make gcc \
+    git make gcc > /dev/null \
     && rm -rf /var/lib/apt/lists/*
 
 RUN echo "en_US.UTF-8 UTF-8" > /etc/locale.gen && locale-gen

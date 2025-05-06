@@ -1,13 +1,13 @@
 FROM debian:bullseye-slim
 
-RUN apt-get update && apt-get install -y wget gnupg lsb-release
+RUN apt-get update -qq > /dev/null && apt-get install -y -qq wget gnupg lsb-release > /dev/null
 
 RUN wget -qO - https://www.postgresql.org/media/keys/ACCC4CF8.asc | tee /etc/apt/trusted.gpg.d/postgresql.asc
 
 RUN echo "deb http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" | \
     tee /etc/apt/sources.list.d/pgdg.list
 
-RUN apt-get update && apt-get install -y \
+RUN apt-get update -qq > /dev/null && apt-get install -y -qq \
     build-essential \
     postgresql-server-dev-16 \
     libcmocka-dev \
@@ -20,7 +20,7 @@ RUN apt-get update && apt-get install -y \
     libkrb5-dev \
     zlib1g-dev \
     libreadline-dev \
-    git cmake gcc make \
+    git cmake gcc make > /dev/null \
     && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /root
