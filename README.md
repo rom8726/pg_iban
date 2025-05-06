@@ -2,7 +2,7 @@
 
 `pg_iban` is a PostgreSQL extension providing an `IBAN` (International Bank Account Number) data type and several utility functions for validation and manipulation of IBANs.
 
-⚠️ **WARNING: This extension has not been tested in production. You use it at your own risk.**
+⚠️ **DISCLAIMER: This extension has not been tested in production. You use it at your own risk.**
 
 ---
 
