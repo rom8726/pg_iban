@@ -5,10 +5,9 @@
 #include "access/hash.h"
 #include "utils/varlena.h"
 #include "varatt.h"
-#include <ctype.h>
-#include <string.h>
-#include <stdlib.h>
 
+#include "def.h"
+#include "pg_iban_clean.h"
 #include "pg_iban_validate.h"
 
 PG_MODULE_MAGIC;
@@ -22,6 +21,7 @@ Datum pg_iban_gt(PG_FUNCTION_ARGS);
 Datum pg_iban_ge(PG_FUNCTION_ARGS);
 Datum pg_iban_cmp(PG_FUNCTION_ARGS);
 Datum pg_iban_hash(PG_FUNCTION_ARGS);
+Datum pg_iban_is_valid(PG_FUNCTION_ARGS);
 
 PG_FUNCTION_INFO_V1(pg_iban_in);
 PG_FUNCTION_INFO_V1(pg_iban_out);
@@ -32,6 +32,7 @@ PG_FUNCTION_INFO_V1(pg_iban_gt);
 PG_FUNCTION_INFO_V1(pg_iban_ge);
 PG_FUNCTION_INFO_V1(pg_iban_cmp);
 PG_FUNCTION_INFO_V1(pg_iban_hash);
+PG_FUNCTION_INFO_V1(pg_iban_is_valid);
 
 extern Datum bttextcmp(PG_FUNCTION_ARGS);
 
@@ -39,20 +40,14 @@ Datum pg_iban_in(PG_FUNCTION_ARGS)
 {
     char *str = PG_GETARG_CSTRING(0);
     char clean[MAX_IBAN_LENGTH + 1];
-    int j = 0;
-    for (int i = 0; str[i] != '\0' && j < MAX_IBAN_LENGTH; i++) {
-        if (!isspace((unsigned char)str[i])) {
-            if (!isalnum((unsigned char)str[i])) {
-                ereport(ERROR,
-                        (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
-                         errmsg("IBAN must contain only alphanumeric characters")));
-            }
-            clean[j++] = toupper((unsigned char)str[i]);
-        }
-    }
-    clean[j] = '\0';
 
-    if (!validate_pg_iban(clean)) {
+    if (!clean_iban(str, clean)) {
+        ereport(ERROR,
+            (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
+             errmsg("IBAN must contain only alphabetic characters and spaces")));
+    }
+
+    if (!validate_iban(clean)) {
         ereport(ERROR,
                 (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
                  errmsg("invalid IBAN format or checksum")));
@@ -115,4 +110,16 @@ Datum pg_iban_hash(PG_FUNCTION_ARGS)
     text *iban = PG_GETARG_TEXT_PP(0);
     PG_RETURN_UINT32(DatumGetUInt32(hash_any((const unsigned char *) VARDATA_ANY(iban),
                                              VARSIZE_ANY_EXHDR(iban))));
+}
+
+Datum pg_iban_is_valid(PG_FUNCTION_ARGS)
+{
+    text *iban_text = PG_GETARG_TEXT_PP(0);
+    char *raw       = text_to_cstring(iban_text);
+    char  clean[MAX_IBAN_LENGTH + 1];
+
+    bool ok = (clean_iban(raw, clean) && validate_iban(clean));
+
+    pfree(raw);
+    PG_RETURN_BOOL(ok);
 }
