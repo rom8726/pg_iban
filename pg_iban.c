@@ -21,6 +21,7 @@ Datum pg_iban_gt(PG_FUNCTION_ARGS);
 Datum pg_iban_ge(PG_FUNCTION_ARGS);
 Datum pg_iban_cmp(PG_FUNCTION_ARGS);
 Datum pg_iban_hash(PG_FUNCTION_ARGS);
+Datum pg_iban_is_valid(PG_FUNCTION_ARGS);
 
 PG_FUNCTION_INFO_V1(pg_iban_in);
 PG_FUNCTION_INFO_V1(pg_iban_out);
@@ -31,6 +32,7 @@ PG_FUNCTION_INFO_V1(pg_iban_gt);
 PG_FUNCTION_INFO_V1(pg_iban_ge);
 PG_FUNCTION_INFO_V1(pg_iban_cmp);
 PG_FUNCTION_INFO_V1(pg_iban_hash);
+PG_FUNCTION_INFO_V1(pg_iban_is_valid);
 
 extern Datum bttextcmp(PG_FUNCTION_ARGS);
 
@@ -108,4 +110,16 @@ Datum pg_iban_hash(PG_FUNCTION_ARGS)
     text *iban = PG_GETARG_TEXT_PP(0);
     PG_RETURN_UINT32(DatumGetUInt32(hash_any((const unsigned char *) VARDATA_ANY(iban),
                                              VARSIZE_ANY_EXHDR(iban))));
+}
+
+Datum pg_iban_is_valid(PG_FUNCTION_ARGS)
+{
+    text *iban_text = PG_GETARG_TEXT_PP(0);
+    char *raw       = text_to_cstring(iban_text);
+    char  clean[MAX_IBAN_LENGTH + 1];
+
+    bool ok = (clean_iban(raw, clean) && validate_iban(clean));
+
+    pfree(raw);
+    PG_RETURN_BOOL(ok);
 }

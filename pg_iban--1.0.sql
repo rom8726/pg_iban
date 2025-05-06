@@ -63,3 +63,8 @@ CREATE OPERATOR CLASS iban_ops DEFAULT FOR TYPE iban USING btree AS
 CREATE OPERATOR CLASS iban_hash_ops FOR TYPE iban USING hash AS
     OPERATOR 1 =,
     FUNCTION 1 iban_hash(iban);
+
+-- User's functions
+CREATE FUNCTION iban_valid(text) RETURNS bool
+AS 'pg_iban', 'pg_iban_is_valid'
+    LANGUAGE C IMMUTABLE STRICT;
