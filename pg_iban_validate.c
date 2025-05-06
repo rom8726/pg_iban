@@ -4,34 +4,36 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-static int char_to_num(char c) {
-    if (isdigit(c)) return c - '0';
-    if (isupper(c)) return c - 'A' + 10;
-    if (islower(c)) return c - 'a' + 10;
-    return -1;
-}
-
-static bool validate_iban_checksum(const char *iban_clean) {
+static bool validate_iban_checksum(const char *iban_clean)
+{
+    const int len = (int)strlen(iban_clean);
     char temp[256];
-    int len = strlen(iban_clean);
-
-    strncpy(temp, iban_clean + 4, len - 4);
-    strncpy(temp + len - 4, iban_clean, 4);
+    memcpy(temp, iban_clean + 4, len - 4);
+    memcpy(temp + len - 4, iban_clean, 4);
     temp[len] = '\0';
 
-    char numeric[256];
-    for (int i = 0; i < len; i++) {
-        int num = char_to_num(temp[i]);
-        if (num < 0) return false;
-        sprintf(numeric + i * 2, "%02d", num);
+    char numeric[512];
+    size_t pos = 0;
+    for (int i = 0; i < len; ++i) {
+        char c = temp[i];
+        if (isdigit((unsigned char)c)) {
+            numeric[pos++] = c;
+        } else if (isalpha((unsigned char)c)) {
+            int val = toupper(c) - 'A' + 10;
+            numeric[pos++] = '0' + (val / 10);
+            numeric[pos++] = '0' + (val % 10);
+        } else {
+            return false;
+        }
     }
+    numeric[pos] = '\0';
 
-    unsigned long long mod = 0;
-    for (int i = 0; i < strlen(numeric); i++) {
+    unsigned int mod = 0;
+    for (size_t i = 0; i < pos; ++i) {
         mod = (mod * 10 + (numeric[i] - '0')) % 97;
     }
 
-    return (mod == 1);
+    return mod == 1;
 }
 
 bool validate_pg_iban(const char *iban)
