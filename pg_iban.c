@@ -5,10 +5,9 @@
 #include "access/hash.h"
 #include "utils/varlena.h"
 #include "varatt.h"
-#include <ctype.h>
-#include <string.h>
-#include <stdlib.h>
 
+#include "def.h"
+#include "pg_iban_clean.h"
 #include "pg_iban_validate.h"
 
 PG_MODULE_MAGIC;
@@ -39,20 +38,10 @@ Datum pg_iban_in(PG_FUNCTION_ARGS)
 {
     char *str = PG_GETARG_CSTRING(0);
     char clean[MAX_IBAN_LENGTH + 1];
-    int j = 0;
-    for (int i = 0; str[i] != '\0' && j < MAX_IBAN_LENGTH; i++) {
-        if (!isspace((unsigned char)str[i])) {
-            if (!isalnum((unsigned char)str[i])) {
-                ereport(ERROR,
-                        (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
-                         errmsg("IBAN must contain only alphanumeric characters")));
-            }
-            clean[j++] = toupper((unsigned char)str[i]);
-        }
-    }
-    clean[j] = '\0';
 
-    if (!validate_pg_iban(clean)) {
+    clean_iban(str, clean);
+
+    if (!validate_iban(clean)) {
         ereport(ERROR,
                 (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
                  errmsg("invalid IBAN format or checksum")));

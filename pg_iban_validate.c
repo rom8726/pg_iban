@@ -1,3 +1,4 @@
+#include "def.h"
 #include "pg_iban_validate.h"
 #include <ctype.h>
 #include <string.h>
@@ -36,7 +37,7 @@ static bool validate_iban_checksum(const char *iban_clean)
     return mod == 1;
 }
 
-bool validate_pg_iban(const char *iban)
+bool validate_iban(const char *iban)
 {
     int len = strlen(iban);
     if (len < MIN_IBAN_LENGTH || len > MAX_IBAN_LENGTH)
