@@ -1,0 +1,33 @@
+FROM postgres:16.0
+
+RUN apt-get update && apt-get install -y \
+    locales \
+    build-essential \
+    postgresql-server-dev-16 \
+    git make gcc \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN echo "en_US.UTF-8 UTF-8" > /etc/locale.gen && locale-gen
+ENV LANG en_US.UTF-8
+ENV LANGUAGE en_US:en
+ENV LC_ALL en_US.UTF-8
+
+WORKDIR /opt
+COPY . /opt/pg_iban
+WORKDIR /opt/pg_iban
+RUN chown -R postgres:postgres /opt
+
+RUN make && make install
+RUN echo "shared_preload_libraries = 'pg_iban'" >> /usr/share/postgresql/postgresql.conf.sample
+
+ENV POSTGRES_USER=postgres
+ENV POSTGRES_PASSWORD=postgres
+ENV POSTGRES_DB=postgres
+
+COPY integration_tests/run_tests.sh /opt/run_tests.sh
+RUN chown postgres:postgres /opt/run_tests.sh
+RUN chmod +x /opt/run_tests.sh
+
+USER postgres
+
+ENTRYPOINT ["/opt/run_tests.sh"]
