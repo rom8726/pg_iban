@@ -12,3 +12,7 @@ include $(PGXS)
 
 $(TESTS): $(TESTS).c pg_iban_validate.c pg_iban_clean.c
 	$(CC) -o $@ $^ -I. -I/usr/include -I/usr/include/postgresql/16/server -Wall -Wextra -O2 -L/usr/local/lib -L/usr/lib/postgresql/16/lib -lcmocka -lpq -lpgcommon -lpgport
+
+docker-unit-test:
+	docker build -t pg_iban_unit_tests -f Dockerfile .
+	docker run --rm pg_iban_unit_tests
