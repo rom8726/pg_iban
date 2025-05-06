@@ -39,7 +39,11 @@ Datum pg_iban_in(PG_FUNCTION_ARGS)
     char *str = PG_GETARG_CSTRING(0);
     char clean[MAX_IBAN_LENGTH + 1];
 
-    clean_iban(str, clean);
+    if (!clean_iban(str, clean)) {
+        ereport(ERROR,
+            (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
+             errmsg("IBAN must contain only alphabetic characters and spaces")));
+    }
 
     if (!validate_iban(clean)) {
         ereport(ERROR,
