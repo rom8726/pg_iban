@@ -12,6 +12,9 @@
 - **Validation**: Functions to validate IBAN format and checksum.
 - **Comparison Operators**: Custom operators for comparison (`=`, `<`, `>`, etc.) fully integrated with PostgreSQL's indexing system.
 - **Index Support**: B-tree and hash indexing for efficient querying.
+- **New in Version 1.1**:
+  - Functions for extracting country (`iban_country`) and BBAN (`iban_bban`) parts from an IBAN.
+  - Function to format IBANs into human-readable form (`iban_format`).
 
 ---
 
@@ -29,9 +32,10 @@ make
 make install
 ```
 
-
-3. Add `pg_iban` to `shared_preload_libraries` in `postgresql.conf`
-
+3. Add `pg_iban` to `shared_preload_libraries` in `postgresql.conf`:
+```conf
+shared_preload_libraries = 'pg_iban'
+```
 
 4. Load the extension into your database:
 ```sql
@@ -40,10 +44,28 @@ CREATE EXTENSION pg_iban;
 
 ---
 
+## Upgrading from Previous Versions
+
+If you are upgrading from version `1.0` to `1.1`, you can apply the update using:
+```sql
+ALTER EXTENSION pg_iban UPDATE TO '1.1';
+```
+This will add the following new functions:
+- `iban_country(iban) RETURNS text`: Extracts the country code from an IBAN.
+- `iban_bban(iban) RETURNS text`: Extracts the BBAN (Basic Bank Account Number) from an IBAN.
+- `iban_format(iban) RETURNS text`: Formats an IBAN in a more readable format.
+
+---
+
 ## Functions
 
 ### IBAN Validation
 - `iban_valid(text) RETURNS bool`: Returns `TRUE` if the provided string is a valid IBAN, `FALSE` otherwise.
+
+### New in Version 1.1
+- `iban_country(iban) RETURNS text`: Extracts the country code from an IBAN.
+- `iban_bban(iban) RETURNS text`: Extracts the BBAN (Basic Bank Account Number) from an IBAN.
+- `iban_format(iban) RETURNS text`: Formats an IBAN in a human-readable format.
 
 ### Operators
 The extension provides custom operators for the `iban` type:
