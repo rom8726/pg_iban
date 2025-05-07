@@ -1,6 +1,6 @@
 EXTENSION = pg_iban
 MODULES   = pg_iban
-DATA      = pg_iban--1.0.sql
+DATA      = pg_iban--1.0.sql pg_iban--1.1.sql pg_iban--1.0--1.1.sql
 PG_CONFIG = pg_config
 MODULE_big = pg_iban
 OBJS       = pg_iban.o pg_iban_validate.o pg_iban_clean.o
