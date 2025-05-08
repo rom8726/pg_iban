@@ -14,3 +14,4 @@ DerivePointerAlignment: false
 PointerAlignment: Left
 NamespaceIndentation: All
 MaxEmptyLinesToKeep: 1
+SortIncludes: Never
