@@ -7,23 +7,19 @@
 #include "def.h"
 
 /* ---------- validate_iban_checksum tests ---------- */
-static void test_checksum_valid(void **state)
-{
+static void test_checksum_valid(void **state) {
     assert_true(validate_iban_checksum("DE89370400440532013000"));
 }
 
-static void test_checksum_invalid(void **state)
-{
+static void test_checksum_invalid(void **state) {
     assert_false(validate_iban_checksum("DE00370400440532013000"));
 }
 
-static void test_checksum_too_short(void **state)
-{
+static void test_checksum_too_short(void **state) {
     assert_false(validate_iban_checksum("DE89"));
 }
 
-static void test_checksum_too_long(void **state)
-{
+static void test_checksum_too_long(void **state) {
     char long_iban[MAX_IBAN_LENGTH + 5];
     memset(long_iban, 'A', sizeof(long_iban) - 1);
     long_iban[sizeof(long_iban) - 1] = '\0';

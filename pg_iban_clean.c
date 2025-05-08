@@ -1,8 +1,7 @@
 #include "pg_iban_clean.h"
 #include "def.h"
 
-bool clean_iban(const char *src, char *dst)
-{
+bool clean_iban(const char *src, char *dst) {
     int j = 0;
 
     for (int i = 0; src[i] != '\0' && j < MAX_IBAN_LENGTH; i++) {

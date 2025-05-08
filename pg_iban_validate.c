@@ -5,8 +5,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-bool validate_iban_checksum(const char *iban_clean)
-{
+bool validate_iban_checksum(const char *iban_clean) {
     const int len = (int)strlen(iban_clean);
 
     if (len < 4 || len < MIN_IBAN_LENGTH || len > MAX_IBAN_LENGTH)
@@ -31,8 +30,7 @@ bool validate_iban_checksum(const char *iban_clean)
     return mod == 1;
 }
 
-bool validate_iban(const char *iban)
-{
+bool validate_iban(const char *iban) {
     int len = strlen(iban);
     if (len < MIN_IBAN_LENGTH || len > MAX_IBAN_LENGTH)
         return false;
