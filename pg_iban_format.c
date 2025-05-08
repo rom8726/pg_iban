@@ -5,7 +5,7 @@
 #include "def.h"
 #include "pg_iban_preprocess.h"
 
-bool iban_format(const char *iban, char *formatted_iban) {
+bool iban_format(const char* iban, char* formatted_iban) {
     char cleaned_iban[MAX_IBAN_LENGTH + 1];
 
     if (!preprocess_iban(iban, cleaned_iban)) {

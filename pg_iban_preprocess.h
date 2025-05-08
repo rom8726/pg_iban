@@ -3,6 +3,6 @@
 
 #include <stdbool.h>
 
-bool preprocess_iban(const char *src, char *cleaned_iban);
+bool preprocess_iban(const char* src, char* cleaned_iban);
 
 #endif

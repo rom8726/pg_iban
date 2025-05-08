@@ -1,9 +1,9 @@
-#include <string.h>
-#include <stdbool.h>
 #include "def.h"
 #include "pg_iban_preprocess.h"
+#include <stdbool.h>
+#include <string.h>
 
-bool iban_country(const char *iban, char *country) {
+bool iban_country(const char* iban, char* country) {
     char cleaned_iban[MAX_IBAN_LENGTH + 1];
 
     if (!preprocess_iban(iban, cleaned_iban)) {

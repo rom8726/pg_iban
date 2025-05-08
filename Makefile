@@ -20,3 +20,6 @@ docker-unit-test:
 docker-integration-test:
 	docker build -t pg_iban_integration_tests -f Dockerfile.integration .
 	docker run --rm -e POSTGRES_PASSWORD=postgres -e POSTGRES_USER=postgres -e POSTGRES_DB=postgres pg_iban_integration_tests
+
+format:
+	find . -type f \( -name "*.h" -o -name "*.c" \) -exec clang-format -i {} +

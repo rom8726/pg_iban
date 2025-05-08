@@ -3,6 +3,6 @@
 
 #include <stdbool.h>
 
-bool iban_bban(const char *iban, char *bban);
+bool iban_bban(const char* iban, char* bban);
 
 #endif
