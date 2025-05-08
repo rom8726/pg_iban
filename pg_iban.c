@@ -1,12 +1,11 @@
 #include <string.h>
-
-#include "access/hash.h"
-#include "fmgr.h"
-#include "postgres.h"
-#include "utils/builtins.h"
-#include "utils/lsyscache.h"
-#include "utils/varlena.h"
-#include "varatt.h"
+#include <postgres.h>
+#include <access/hash.h>
+#include <fmgr.h>
+#include <utils/builtins.h>
+#include <utils/lsyscache.h>
+#include <utils/varlena.h>
+#include <varatt.h>
 
 #include "def.h"
 #include "pg_iban_bban.h"
