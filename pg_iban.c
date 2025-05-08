@@ -1,3 +1,5 @@
+#include <string.h>
+
 #include "postgres.h"
 #include "fmgr.h"
 #include "utils/builtins.h"
@@ -9,6 +11,9 @@
 #include "def.h"
 #include "pg_iban_clean.h"
 #include "pg_iban_validate.h"
+#include "pg_iban_country.h"
+#include "pg_iban_bban.h"
+#include "pg_iban_format.h"
 
 PG_MODULE_MAGIC;
 
@@ -111,8 +116,8 @@ Datum pg_iban_hash(PG_FUNCTION_ARGS) {
 
 Datum pg_iban_is_valid(PG_FUNCTION_ARGS) {
     text *iban_text = PG_GETARG_TEXT_PP(0);
-    char *raw       = text_to_cstring(iban_text);
-    char  clean[MAX_IBAN_LENGTH + 1];
+    char *raw = text_to_cstring(iban_text);
+    char clean[MAX_IBAN_LENGTH + 1];
 
     bool ok = (clean_iban(raw, clean) && validate_iban(clean));
 
@@ -122,66 +127,42 @@ Datum pg_iban_is_valid(PG_FUNCTION_ARGS) {
 
 Datum pg_iban_country(PG_FUNCTION_ARGS) {
     text *iban_text = PG_GETARG_TEXT_PP(0);
-    int iban_length = VARSIZE_ANY_EXHDR(iban_text);
+    const char* iban_raw = VARDATA_ANY(iban_text);
+    char country_code[3];
 
-    if (iban_length < 2) {
+    if (!iban_country(iban_raw, country_code)) {
         ereport(ERROR,
                 (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
-                 errmsg("IBAN is too short to contain a country code")));
+                 errmsg("invalid IBAN format or checksum")));
     }
 
-    char* iban_raw = VARDATA_ANY(iban_text);
-    char country_code[3];
-    country_code[0] = iban_raw[0];
-    country_code[1] = iban_raw[1];
-    country_code[2] = '\0';
-
-    PG_RETURN_TEXT_P(cstring_to_text(country_code));
+    PG_RETURN_TEXT_P(cstring_to_text_with_len(country_code, 2));
 }
 
 Datum pg_iban_bban(PG_FUNCTION_ARGS) {
     text *iban_text = PG_GETARG_TEXT_PP(0);
-    int iban_length = VARSIZE_ANY_EXHDR(iban_text);
+    const char *iban_raw = VARDATA_ANY(iban_text);
+    char bban[MAX_IBAN_LENGTH + 1];
 
-    if (iban_length < 5) {
+    if (!iban_bban(iban_raw, bban)) {
         ereport(ERROR,
                 (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
-                 errmsg("IBAN is too short to contain a BBAN")));
+                 errmsg("invalid IBAN format or checksum")));
     }
 
-    char *iban_raw = VARDATA_ANY(iban_text);
-    char *bban = &(iban_raw[4]);
-
-    int bban_length = iban_length - 4;
-
-    PG_RETURN_TEXT_P(cstring_to_text_with_len(bban, bban_length));
+    PG_RETURN_TEXT_P(cstring_to_text_with_len(bban, strlen(bban)));
 }
 
 Datum pg_iban_format(PG_FUNCTION_ARGS) {
     text *iban_text = PG_GETARG_TEXT_PP(0);
-    int iban_length = VARSIZE_ANY_EXHDR(iban_text);
+    const char *iban_raw = VARDATA_ANY(iban_text);
+    char formatted_iban[MAX_IBAN_FORMATTED_LENGTH];
 
-    if (iban_length < MIN_IBAN_LENGTH || iban_length > MAX_IBAN_LENGTH) {
+    if (!iban_format(iban_raw, formatted_iban)) {
         ereport(ERROR,
                 (errcode(ERRCODE_INVALID_TEXT_REPRESENTATION),
-                 errmsg("IBAN length is invalid. Must be between %d and %d characters", MIN_IBAN_LENGTH, MAX_IBAN_LENGTH)));
+                 errmsg("invalid IBAN format or checksum")));
     }
 
-    const char *iban_raw = VARDATA_ANY(iban_text);
-    int formatted_length = iban_length + (iban_length - 1) / 4;
-
-    char *formatted = palloc0(formatted_length + 1);
-    int src_idx = 0, dest_idx = 0;
-
-    for (src_idx = 0; src_idx < iban_length; src_idx++) {
-        if (src_idx > 0 && src_idx % 4 == 0) {
-            formatted[dest_idx++] = ' ';
-        }
-
-        formatted[dest_idx++] = iban_raw[src_idx];
-    }
-
-    formatted[dest_idx] = '\0';
-
-    PG_RETURN_TEXT_P(cstring_to_text(formatted));
+    PG_RETURN_TEXT_P(cstring_to_text_with_len(formatted_iban, strlen(formatted_iban)));
 }

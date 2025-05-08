@@ -2,9 +2,12 @@
 #include <setjmp.h>
 #include <stdarg.h>
 #include <cmocka.h>
+#include "def.h"
 #include "pg_iban_validate.h"
 #include "pg_iban_clean.h"
-#include "def.h"
+#include "pg_iban_country.h"
+#include "pg_iban_bban.h"
+#include "pg_iban_format.h"
 
 /* ---------- validate_iban_checksum tests ---------- */
 static void test_checksum_valid(void **state) {
@@ -71,6 +74,53 @@ static void test_clean_empty(void **state) {
     assert_string_equal(dst, "");
 }
 
+/* ------------------------- iban_country tests ------------------------- */
+static void test_iban_country_valid(void **state) {
+    char country[3];
+    assert_true(iban_country("DE89370400440532013000", country));
+    assert_string_equal(country, "DE");
+
+    assert_true(iban_country("GB82WEST12345698765432", country));
+    assert_string_equal(country, "GB");
+}
+
+static void test_iban_country_invalid(void **state) {
+    char country[3];
+    assert_false(iban_country("INVALIDIBAN", country));
+    assert_false(iban_country("", country));
+}
+
+/* ------------------------- iban_bban tests ---------------------------- */
+static void test_iban_bban_valid(void **state) {
+    char bban[MAX_IBAN_LENGTH + 1];
+    assert_true(iban_bban("DE89370400440532013000", bban));
+    assert_string_equal(bban, "370400440532013000");
+
+    assert_true(iban_bban("GB82WEST12345698765432", bban));
+    assert_string_equal(bban, "WEST12345698765432");
+}
+
+static void test_iban_bban_invalid(void **state) {
+    char bban[MAX_IBAN_LENGTH + 1];
+    assert_false(iban_bban("INVALIDIBAN", bban));
+    assert_false(iban_bban("", bban));
+}
+
+/* ------------------------- iban_format tests -------------------------- */
+static void test_iban_format_valid(void **state) {
+    char formatted_iban[MAX_IBAN_FORMATTED_LENGTH];
+    assert_true(iban_format("DE89370400440532013000", formatted_iban));
+    assert_string_equal(formatted_iban, "DE89 3704 0044 0532 0130 00");
+
+    assert_true(iban_format("GB82WEST12345698765432", formatted_iban));
+    assert_string_equal(formatted_iban, "GB82 WEST 1234 5698 7654 32");
+}
+
+static void test_iban_format_invalid(void **state) {
+    char formatted_iban[MAX_IBAN_FORMATTED_LENGTH];
+    assert_false(iban_format("INVALIDIBAN", formatted_iban));
+    assert_false(iban_format("", formatted_iban));
+}
 
 int main(void) {
     const struct CMUnitTest tests[] = {
@@ -88,6 +138,15 @@ int main(void) {
         cmocka_unit_test(test_clean_invalid_char),
         cmocka_unit_test(test_clean_too_long),
         cmocka_unit_test(test_clean_empty),
+        /* iban_country */
+        cmocka_unit_test(test_iban_country_valid),
+        cmocka_unit_test(test_iban_country_invalid),
+        /* iban_bban */
+        cmocka_unit_test(test_iban_bban_valid),
+        cmocka_unit_test(test_iban_bban_invalid),
+        /* iban_format */
+        cmocka_unit_test(test_iban_format_valid),
+        cmocka_unit_test(test_iban_format_invalid),
     };
 
     return cmocka_run_group_tests(tests, NULL, NULL);
