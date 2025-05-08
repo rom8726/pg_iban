@@ -1,6 +1,8 @@
 #include "pg_iban_clean.h"
 #include "def.h"
 
+#include <ctype.h>
+
 bool clean_iban(const char* src, char* dst) {
     int j = 0;
 

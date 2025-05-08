@@ -4,10 +4,11 @@
 #include "pg_iban_country.h"
 #include "pg_iban_format.h"
 #include "pg_iban_validate.h"
-#include <cmocka.h>
 #include <setjmp.h>
 #include <stdarg.h>
+#include <string.h>
 #include <stddef.h>
+#include <cmocka.h>
 
 /* ---------- validate_iban_checksum tests ---------- */
 static void test_checksum_valid(void** state) {
